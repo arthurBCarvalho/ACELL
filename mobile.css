@@ -1,0 +1,145 @@
+/* ===================== MOBILE PAGE OVERLAY ===================== */
+/* Tela inteira que substitui os modais no mobile */
+
+#mobile-page-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: #111;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    flex-direction: column;
+    animation: mpSlideIn 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+#mobile-page-overlay.open {
+    display: flex;
+}
+
+@keyframes mpSlideIn {
+    from { transform: translateX(100%); opacity: 0.6; }
+    to   { transform: translateX(0);    opacity: 1; }
+}
+
+/* Header da página mobile */
+.mp-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    background: #000;
+    border-bottom: 1px solid #222;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.mp-back-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #fff;
+    padding: 0;
+    flex-shrink: 0;
+}
+
+.mp-back-btn svg {
+    width: 22px;
+    height: 22px;
+}
+
+.mp-header-title {
+    font-size: 17px;
+    font-weight: 600;
+    color: #fff;
+    letter-spacing: 0.02em;
+    flex: 1;
+    text-align: center;
+    margin-right: 36px; /* compensa o botão de voltar para centralizar */
+}
+
+/* Título grande da marca */
+.mp-brand-title {
+    font-size: 42px;
+    font-weight: 800;
+    color: #fff;
+    text-align: center;
+    letter-spacing: 0.04em;
+    padding: 32px 20px 20px;
+    text-transform: uppercase;
+}
+
+/* Lista de linhas/modelos */
+.mp-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 8px 20px 32px;
+}
+
+.mp-list-btn {
+    display: block;
+    width: 100%;
+    padding: 18px 24px;
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 50px;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    text-align: center;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.mp-list-btn:active {
+    background: #2a2a2a;
+    transform: scale(0.98);
+}
+
+/* Rodapé com observação e WhatsApp */
+.mp-footer {
+    padding: 0 20px 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+.mp-footer-obs {
+    font-size: 13px;
+    color: #777;
+    text-align: center;
+}
+
+.mp-footer-whatsapp {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 32px;
+    background: #25D366;
+    color: #fff;
+    border-radius: 50px;
+    font-size: 15px;
+    font-weight: 700;
+    text-decoration: none;
+    letter-spacing: 0.03em;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* ===================== SÓ EXISTE NO MOBILE ===================== */
+@media (min-width: 768px) {
+    #mobile-page-overlay {
+        display: none !important;
+    }
+}
