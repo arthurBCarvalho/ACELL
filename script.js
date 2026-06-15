@@ -2,70 +2,35 @@
 
 document.addEventListener('DOMContentLoaded', function () {
 
-    // Menu Mobile
-    const navToggle = document.getElementById('navToggle');
-    const navMenu = document.getElementById('navMenu');
 
-    if (navToggle && navMenu) {
-        navToggle.addEventListener('click', () => {
-            navToggle.classList.toggle('active');
-            navMenu.classList.toggle('active');
-        });
-
-        navMenu.querySelectorAll('a').forEach(link => {
-            link.addEventListener('click', () => {
-                navToggle.classList.remove('active');
-                navMenu.classList.remove('active');
-            });
-        });
-
-        document.addEventListener('click', (e) => {
-            if (!navToggle.contains(e.target) && !navMenu.contains(e.target)) {
-                navToggle.classList.remove('active');
-                navMenu.classList.remove('active');
-            }
-        });
-    }
 
     // Scroll Suave
 document.querySelectorAll('a[href^="#"]').forEach(link => {
-
     link.addEventListener('click', function (e) {
 
-        // Ignora links dentro de modais
         if (this.closest('.modal')) return;
-
-        // MOBILE + botão Consertos
-        if (
-            window.innerWidth <= 640 &&
-            this.id === 'btnConsertos'
-        ) {
-            return;
-        }
+        if (window.innerWidth <= 640 && this.id === 'btnConsertos') return;
 
         const href = this.getAttribute('href');
+        if (!href || href === '#') return;
 
-        if (href !== '#') {
+        const target = document.querySelector(href);
+        if (!target) return;
 
-            e.preventDefault();
+        e.preventDefault();
 
-            const target = document.querySelector(href);
+        // fecha menu e limpa overflow imediatamente
+        if (typeof window.fecharMenu === 'function') window.fecharMenu();
+        document.body.style.overflow = '';
+        document.body.style.overflow = '';
 
-            if (target) {
+        const headerHeight = document.querySelector('.header')?.offsetHeight || 70;
+        const top = target.getBoundingClientRect().top + window.pageYOffset - headerHeight;
 
-                const headerHeight = document.querySelector('.header').offsetHeight;
-
-                window.scrollTo({
-                    top: target.offsetTop - headerHeight,
-                    behavior: 'smooth'
-                });
-
-            }
-
-        }
-
+        setTimeout(() => {
+            window.scrollTo({ top, behavior: 'smooth' });
+        }, 100);
     });
-
 });
 
 
@@ -593,6 +558,13 @@ const dispositivoData = {
         ['TOUCH + VIDRO', 'R$ 590,00 À VISTA / R$ 650,00 EM 10X'],
         ['CONECTOR','R$ 390,00'], ['BOTÕES', 'R$ 350,00'], ['SOFTWARE', 'R$ 90,00'],],
     
+        // APPLE WATCH
+    'gera-1':[['TOUCH + VIDRO', 'R$ 590,00 À VISTA / R$ 650,00 EM 10X'],], 
+    'gera-2':[['TOUCH + VIDRO', 'R$ 590,00 À VISTA / R$ 650,00 EM 10X'],], 
+    'gera-3':[['TOUCH + VIDRO', 'R$ 590,00 À VISTA / R$ 650,00 EM 10X'],],
+    'gera-4':[['TOUCH + VIDRO', 'R$ 590,00 À VISTA / R$ 650,00 EM 10X'],],
+    'gera-5':[['TOUCH + VIDRO', 'R$ 590,00 À VISTA / R$ 650,00 EM 10X'],],
+    'gera-6':[['TOUCH + VIDRO', 'R$ 590,00 À VISTA / R$ 650,00 EM 10X'],],
     
     // SAMSUNG
     //LINHA A
@@ -2329,6 +2301,7 @@ const dispositivoData = {
 
 };
 
+
 // ================= REFERÊNCIAS DOS MODAIS =================
 const modelosModal   = document.getElementById('modelosModal');
 const detalhesModal  = document.getElementById('detalhesModal');
@@ -2718,4 +2691,57 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
+
+// ================= MENU HAMBURGUER (MOBILE) =================
+(function() {
+    const toggle = document.getElementById('navToggle');
+    const menu = document.getElementById('navMenu');
+    if (!toggle || !menu) return;
+
+    const backdrop = document.createElement('div');
+    backdrop.className = 'nav-backdrop';
+    document.body.appendChild(backdrop);
+
+    function abrirMenu() {
+        menu.classList.add('active');
+        toggle.classList.add('active');
+        backdrop.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    // torna global para poder ser chamada de outros arquivos
+    window.fecharMenu = function() {
+        menu.classList.remove('active');
+        toggle.classList.remove('active');
+        backdrop.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    toggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        menu.classList.contains('active') ? window.fecharMenu() : abrirMenu();
+    });
+
+    backdrop.addEventListener('click', window.fecharMenu);
+
+    menu.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', window.fecharMenu);
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') window.fecharMenu();
+    });
+})();
+
+
+document.querySelectorAll('.nav-menu a').forEach(link => {
+    link.addEventListener('click', function(e) {
+        const href = this.getAttribute('href');
+        const target = document.querySelector(href);
+        console.log('href:', href);
+        console.log('target encontrado:', target);
+        console.log('overflow antes:', document.body.style.overflow);
+        console.log('pageYOffset:', window.pageYOffset);
+    });
+});
 })

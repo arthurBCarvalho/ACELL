@@ -1,5 +1,8 @@
-/* ===================== MOBILE PAGE OVERLAY ===================== */
-/* Tela inteira que substitui os modais no mobile */
+/* ==========================================================
+   MOBILE.CSS — Lojas Acell
+   ========================================================== */
+
+/* ========== MOBILE PAGE OVERLAY ========== */
 
 #mobile-page-overlay {
     display: none;
@@ -13,16 +16,15 @@
     animation: mpSlideIn 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-#mobile-page-overlay.open {
-    display: flex;
-}
+
+
+#mobile-page-overlay.open { display: flex; }
 
 @keyframes mpSlideIn {
     from { transform: translateX(100%); opacity: 0.6; }
     to   { transform: translateX(0);    opacity: 1; }
 }
 
-/* Header da página mobile */
 .mp-header {
     display: flex;
     align-items: center;
@@ -49,10 +51,7 @@
     flex-shrink: 0;
 }
 
-.mp-back-btn svg {
-    width: 22px;
-    height: 22px;
-}
+.mp-back-btn svg { width: 22px; height: 22px; }
 
 .mp-header-title {
     font-size: 17px;
@@ -61,10 +60,9 @@
     letter-spacing: 0.02em;
     flex: 1;
     text-align: center;
-    margin-right: 36px; /* compensa o botão de voltar para centralizar */
+    margin-right: 36px;
 }
 
-/* Título grande da marca */
 .mp-brand-title {
     font-size: 42px;
     font-weight: 800;
@@ -75,7 +73,6 @@
     text-transform: uppercase;
 }
 
-/* Lista de linhas/modelos */
 .mp-list {
     display: flex;
     flex-direction: column;
@@ -102,12 +99,8 @@
     -webkit-tap-highlight-color: transparent;
 }
 
-.mp-list-btn:active {
-    background: #2a2a2a;
-    transform: scale(0.98);
-}
+.mp-list-btn:active { background: #2a2a2a; transform: scale(0.98); }
 
-/* Rodapé com observação e WhatsApp */
 .mp-footer {
     padding: 0 20px 40px;
     display: flex;
@@ -116,11 +109,7 @@
     gap: 16px;
 }
 
-.mp-footer-obs {
-    font-size: 13px;
-    color: #777;
-    text-align: center;
-}
+.mp-footer-obs { font-size: 13px; color: #777; text-align: center; }
 
 .mp-footer-whatsapp {
     display: inline-flex;
@@ -137,9 +126,255 @@
     -webkit-tap-highlight-color: transparent;
 }
 
-/* ===================== SÓ EXISTE NO MOBILE ===================== */
-@media (min-width: 768px) {
-    #mobile-page-overlay {
-        display: none !important;
+@media (min-width: 769px) {
+    #mobile-page-overlay { display: none !important; }
+}
+
+/* ==========================================================
+   ANTI SCROLL HORIZONTAL — corrige vazamento em qualquer tela
+   ========================================================== */
+@media (max-width: 768px) {
+
+    /* Raiz: impede qualquer overflow horizontal */
+    html, body {
+        overflow-x: hidden;
+        max-width: 100%;
     }
+
+    /* Todo elemento respeita a largura da tela */
+    *, *::before, *::after {
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    /* Imagens nunca vazam */
+    img { max-width: 100%; height: auto; }
+
+    /* ---- Container ---- */
+    .container { padding: 0 16px; }
+
+    /* ---- Seções ---- */
+    section { padding: 60px 0; }
+    .section-header { margin-bottom: 36px; }
+    .section-header p { font-size: 1rem; }
+
+    /* ---- HEADER / NAV ---- */
+    .header { padding: 12px 0; }
+
+    .nav-toggle {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    width: 40px;
+    height: 40px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    z-index: 1100;
+}
+
+.nav-menu {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 75vw;
+    max-width: 320px;
+    height: 100vh;
+    background: #0a0a0a;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 80px 0 40px;
+    transition: right 0.3s ease;
+    z-index: 1050;
+    border-left: 1px solid rgba(255,255,255,0.08);
+    overflow-y: auto;
+}
+
+.nav-menu.active { right: 0; }
+
+.nav-menu li {
+    width: 100%;
+    opacity: 1;
+    visibility: visible;
+}
+
+.nav-menu li a {
+    display: block;
+    padding: 16px 28px;
+    font-size: 1.1rem;
+    color: #fff;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    width: 100%;
+}
+
+.nav-menu a::after { display: none; }
+
+.nav-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 1040;
+    pointer-events: none;
+}
+
+.nav-backdrop.active { 
+    display: block;
+    pointer-events: auto;
+    /* só captura cliques fora do menu */
+    clip-path: inset(0 75vw 0 0);
+}
+
+    /* ---- HERO ---- */
+    .hero { min-height: 100svh; padding: 100px 0 60px; }
+    .hero .container { align-items: flex-start; }
+    .hero-content { max-width: 100%; }
+    .hero-badge { font-size: 0.8rem; padding: 6px 14px; }
+    .hero-subtitle { font-size: 1rem; margin-bottom: 24px; }
+
+    .hero-buttons {
+        flex-direction: column;
+        gap: 12px;
+        width: 100%;
+    }
+    .hero-buttons .btn { width: 100%; justify-content: center; }
+
+    .hero-stats { gap: 12px; flex-wrap: wrap; }
+    .stat { padding: 14px 20px; flex: 1; min-width: 130px; }
+    .stat-number { font-size: 1.4rem; }
+    .stat-label  { font-size: 0.8rem; }
+
+    /* ---- SOBRE ---- */
+    .sobre-content { grid-template-columns: 1fr; gap: 32px; }
+    .sobre-img { height: 260px; }
+    .sobre-text p { font-size: 1rem; }
+    .sobre-features { gap: 14px; }
+    .feature { padding: 16px; gap: 14px; }
+    .feature-icon { font-size: 1.6rem; }
+
+    /* ---- ACESSÓRIOS ---- */
+    .acessorios-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    /* ---- CONSERTOS ---- */
+    .consertos-grid { grid-template-columns: 1fr; gap: 20px; }
+    .consertos-card { border-radius: 12px; }
+    .consertos-image { height: 160px; }
+    .consertos-content { padding: 14px; }
+    .consertos-content .btn { width: 100%; justify-content: center; }
+
+    /* ---- ORÇAMENTOS ---- */
+    .orcamentos-content { grid-template-columns: 1fr; gap: 36px; }
+    .orcamentos-info { gap: 20px; }
+    .info-item { gap: 14px; }
+    .info-icon { font-size: 1.6rem; }
+
+    form {
+        height: auto;
+        padding: 20px 16px;
+        gap: 12px;
+        width: 100%;
+    }
+
+    .titulo-form { font-size: 1.4rem; letter-spacing: 1.5px; margin: 0 0 8px; }
+    input  { height: 46px; font-size: 0.95rem; width: 100%; }
+    .aconteceu { height: 100px; font-size: 0.95rem; width: 100%; }
+    .btn-form { width: 100%; justify-content: center; padding: 14px; }
+
+    /* ---- DEPOIMENTOS ---- */
+    .depoimentos-grid { grid-template-columns: 1fr; gap: 20px; }
+    .depoimento-card { padding: 20px; }
+    .avatar { width: 50px; height: 50px; }
+
+    /* ---- FOOTER ---- */
+    .footer { padding: 40px 0 16px; }
+    .footer-links { flex-wrap: wrap; gap: 14px; justify-content: center; }
+    .footer-bottom p { font-size: 0.8rem; }
+
+    /* ---- BOTÃO WHATSAPP FIXO ---- */
+    .caixa-link-wpp { bottom: 16px; right: 14px; }
+    .link-wpp img   { width: 52px; }
+
+    /* ---- MODAIS ---- */
+    .modal { padding: 10px; }
+
+    .modal-content {
+        max-width: 100%;
+        max-height: 90vh;
+        overflow-y: auto;
+        overflow-x: hidden;   /* <- sem scroll lateral no modal */
+        border-radius: 12px;
+    }
+
+    .precos-modal-content { width: 100%; }
+    .modal-header { padding: 14px 16px; }
+    .modal-header h3 { font-size: 1rem; }
+    .modal-body { padding: 14px; }
+
+    /* Tabela de linhas: sem min-width fixo, células quebram texto */
+    .precos-4col {
+        min-width: unset;
+        width: 100%;
+        table-layout: fixed;
+    }
+
+    .precos-4col td,
+    .precos-4col th {
+        padding: 10px 6px;
+        font-size: 0.82rem;
+        white-space: normal;
+        word-break: break-word;
+    }
+
+    /* Wrapper da tabela: scroll interno apenas se necessário */
+    .precos-wrap {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        max-width: 100%;
+    }
+
+    /* Tabela de detalhes: 4 colunas → 2 colunas */
+    .detalhes-modal-content .precos-table thead tr:nth-child(2) th:nth-child(3),
+    .detalhes-modal-content .precos-table thead tr:nth-child(2) th:nth-child(4),
+    .detalhes-modal-content .precos-table tbody td:nth-child(3),
+    .detalhes-modal-content .precos-table tbody td:nth-child(4) {
+        display: none;
+    }
+
+    .detalhes-modal-content .precos-table {
+        table-layout: fixed;
+        width: 100%;
+    }
+
+    .detalhes-modal-content .precos-table td,
+    .detalhes-modal-content .precos-table th {
+        width: 50%;
+        word-break: break-word;
+        white-space: normal;
+    }
+}
+
+/* ---- Telas muito pequenas (< 480px) ---- */
+@media (max-width: 480px) {
+    h1 { font-size: 1.8rem; }
+    h2 { font-size: 1.5rem; }
+    h3 { font-size: 1.15rem; }
+
+    .hero { padding: 90px 0 48px; }
+    .hero-stats { gap: 8px; }
+    .stat { padding: 12px 14px; min-width: 110px; }
+    .stat-number { font-size: 1.2rem; }
+
+    .acessorios-grid { gap: 8px; }
+
+    .mp-brand-title { font-size: 32px; padding: 24px 16px 16px; }
+    .mp-list-btn { font-size: 13px; padding: 15px 18px; }
+
+    .footer-links { gap: 10px; font-size: 0.875rem; }
 }
