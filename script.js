@@ -2312,7 +2312,9 @@ function isMobile() {
 }
 
 // ================= MOBILE PAGE OVERLAY =================
-// Cria a estrutura do overlay no DOM (se ainda não existir)
+// Pilha de navegação: guarda cada "tela" para poder voltar
+const mobileNavStack = [];
+
 function criarMobileOverlay() {
     if (document.getElementById('mobile-page-overlay')) return;
     const overlay = document.createElement('div');
@@ -2330,86 +2332,122 @@ function criarMobileOverlay() {
     `;
     document.body.appendChild(overlay);
 
-    document.getElementById('mp-back-btn').addEventListener('click', fecharMobilePage);
-    window.addEventListener('popstate', fecharMobilePage);
+    // Botão voltar: desce um nível na pilha ou fecha tudo
+    document.getElementById('mp-back-btn').addEventListener('click', voltarMobilePage);
+
+    // Botão físico/gesto de voltar do browser
+    window.addEventListener('popstate', voltarMobilePage);
 }
 
-function abrirMobilePage(titulo, linhas, whatsappUrl) {
+// Renderiza o corpo do overlay com o conteúdo passado
+function renderizarMobilePage(titulo, htmlBody) {
     criarMobileOverlay();
     const overlay = document.getElementById('mobile-page-overlay');
     document.getElementById('mp-header-title').textContent = titulo;
-
-    // Monta o corpo: título grande + lista de botões
-    const body = document.getElementById('mp-body');
-    body.innerHTML = `
-        <div class="mp-brand-title">${titulo}</div>
-        <div class="mp-list" id="mp-list"></div>
-        <div class="mp-footer">
-            <p class="mp-footer-obs">Consulte disponibilidade de peças.</p>
-            <a href="${whatsappUrl}" class="mp-footer-whatsapp" target="_blank" rel="noopener">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.558 4.118 1.528 5.845L.057 23.882l6.196-1.424A11.93 11.93 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.8 9.8 0 01-4.997-1.366l-.358-.213-3.681.845.874-3.567-.234-.372A9.79 9.79 0 012.182 12C2.182 6.57 6.57 2.182 12 2.182S21.818 6.57 21.818 12 17.43 21.818 12 21.818z"/></svg>
-                Pedir no WhatsApp
-            </a>
-        </div>
-    `;
-
-    // Preenche os botões de linha
-    const list = document.getElementById('mp-list');
-    linhas.forEach(({ label, linhaKey }) => {
-        const btn = document.createElement('button');
-        btn.className = 'mp-list-btn';
-        btn.textContent = label;
-        btn.addEventListener('click', () => {
-            abrirMobileModelos(linhaKey, label, whatsappUrl);
-        });
-        list.appendChild(btn);
-    });
-
+    document.getElementById('mp-body').innerHTML = htmlBody;
     overlay.classList.add('open');
     overlay.scrollTop = 0;
     document.body.style.overflow = 'hidden';
+}
+
+// SVG do WhatsApp (reutilizado)
+const WA_SVG = `<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+  <path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.558 4.118 1.528 5.845L.057 23.882l6.196-1.424A11.93 11.93 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.8 9.8 0 01-4.997-1.366l-.358-.213-3.681.845.874-3.567-.234-.372A9.79 9.79 0 012.182 12C2.182 6.57 6.57 2.182 12 2.182S21.818 6.57 21.818 12 17.43 21.818 12 21.818z"/>
+</svg>`;
+
+function rodapeWhatsapp(whatsappUrl, obs) {
+    return `
+        <div class="mp-footer">
+            <p class="mp-footer-obs">${obs}</p>
+            <a href="${whatsappUrl}" class="mp-footer-whatsapp" target="_blank" rel="noopener">
+                ${WA_SVG} Pedir no WhatsApp
+            </a>
+        </div>`;
+}
+
+// ── NÍVEL 1: linhas da marca ───────────────────────────────────────────────
+function abrirMobilePage(titulo, linhas, whatsappUrl) {
+    // Limpa a pilha ao abrir uma marca nova
+    mobileNavStack.length = 0;
+
+    // Grava este nível na pilha para que "voltar" possa recriá-lo
+    mobileNavStack.push({ tipo: 'marca', titulo, linhas, whatsappUrl });
+
+    _renderizarMarca(titulo, linhas, whatsappUrl);
     history.pushState({ mobilePage: true }, '');
 }
 
-function abrirMobileModelos(linhaKey, linhaNome, whatsappUrl) {
-    const modelos = linhasData[linhaKey];
-    const body = document.getElementById('mp-body');
-    document.getElementById('mp-header-title').textContent = linhaNome;
+function _renderizarMarca(titulo, linhas, whatsappUrl) {
+    let botoesHtml = linhas.map(({ label, linhaKey }) =>
+        `<button class="mp-list-btn" data-linha-key="${linhaKey}" data-linha-label="${label}">${label}</button>`
+    ).join('');
 
-    body.innerHTML = `
-        <div class="mp-brand-title">${linhaNome}</div>
-        <div class="mp-list" id="mp-list"></div>
-        <div class="mp-footer">
-            <p class="mp-footer-obs">Clique no modelo para ver os preços.</p>
-            <a href="${whatsappUrl}" class="mp-footer-whatsapp" target="_blank" rel="noopener">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.558 4.118 1.528 5.845L.057 23.882l6.196-1.424A11.93 11.93 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.8 9.8 0 01-4.997-1.366l-.358-.213-3.681.845.874-3.567-.234-.372A9.79 9.79 0 012.182 12C2.182 6.57 6.57 2.182 12 2.182S21.818 6.57 21.818 12 17.43 21.818 12 21.818z"/></svg>
-                Pedir no WhatsApp
-            </a>
-        </div>
-    `;
+    const html = `
+        <div class="mp-brand-title">${titulo}</div>
+        <div class="mp-list">${botoesHtml}</div>
+        ${rodapeWhatsapp(whatsappUrl, 'Consulte disponibilidade de peças.')}`;
 
-    const list = document.getElementById('mp-list');
-    if (modelos && modelos.length) {
-        modelos.forEach(modeloKey => {
-            const btn = document.createElement('button');
-            btn.className = 'mp-list-btn';
-            btn.textContent = modelosNomes[modeloKey] || modeloKey;
-            btn.addEventListener('click', () => {
-                abrirMobileDetalhes(modeloKey, modelosNomes[modeloKey] || modeloKey, whatsappUrl);
-            });
-            list.appendChild(btn);
+    renderizarMobilePage(titulo, html);
+
+    // Eventos dos botões de linha
+    document.querySelectorAll('#mp-body .mp-list-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const key   = btn.getAttribute('data-linha-key');
+            const label = btn.getAttribute('data-linha-label');
+            abrirMobileModelos(key, label, whatsappUrl);
         });
-    } else {
-        list.innerHTML = '<p style="color:#666;text-align:center;padding:20px">Modelos não disponíveis.</p>';
-    }
-
-    document.getElementById('mobile-page-overlay').scrollTop = 0;
+    });
 }
 
+// ── NÍVEL 2: modelos da linha ──────────────────────────────────────────────
+function abrirMobileModelos(linhaKey, linhaNome, whatsappUrl) {
+    // Empilha este nível
+    mobileNavStack.push({ tipo: 'modelos', linhaKey, linhaNome, whatsappUrl });
+
+    _renderizarModelos(linhaKey, linhaNome, whatsappUrl);
+    history.pushState({ mobilePage: true }, '');
+}
+
+function _renderizarModelos(linhaKey, linhaNome, whatsappUrl) {
+    const modelos = linhasData[linhaKey];
+
+    let botoesHtml = '';
+    if (modelos && modelos.length) {
+        botoesHtml = modelos.map(modeloKey =>
+            `<button class="mp-list-btn" data-modelo-key="${modeloKey}">${modelosNomes[modeloKey] || modeloKey}</button>`
+        ).join('');
+    } else {
+        botoesHtml = '<p style="color:#666;text-align:center;padding:20px">Modelos não disponíveis.</p>';
+    }
+
+    const html = `
+        <div class="mp-brand-title">${linhaNome}</div>
+        <div class="mp-list">${botoesHtml}</div>
+        ${rodapeWhatsapp(whatsappUrl, 'Clique no modelo para ver os preços.')}`;
+
+    renderizarMobilePage(linhaNome, html);
+
+    // Eventos dos botões de modelo
+    document.querySelectorAll('#mp-body .mp-list-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const key = btn.getAttribute('data-modelo-key');
+            abrirMobileDetalhes(key, modelosNomes[key] || key, whatsappUrl);
+        });
+    });
+}
+
+// ── NÍVEL 3: preços do modelo ──────────────────────────────────────────────
 function abrirMobileDetalhes(key, titulo, whatsappUrl) {
+    // Empilha este nível
+    mobileNavStack.push({ tipo: 'detalhes', key, titulo, whatsappUrl });
+
+    _renderizarDetalhes(key, titulo, whatsappUrl);
+    history.pushState({ mobilePage: true }, '');
+}
+
+function _renderizarDetalhes(key, titulo, whatsappUrl) {
     const dados = dispositivoData[key];
-    document.getElementById('mp-header-title').textContent = titulo;
-    const body = document.getElementById('mp-body');
 
     let itensHtml = '';
     if (dados && dados.length) {
@@ -2425,7 +2463,7 @@ function abrirMobileDetalhes(key, titulo, whatsappUrl) {
         itensHtml = '<p style="color:#666;text-align:center;padding:32px">Dados não disponíveis.</p>';
     }
 
-    body.innerHTML = `
+    const html = `
         <div class="mp-brand-title" style="font-size:26px;padding-top:24px;">${titulo}</div>
         <div style="background:#1a1a1a;border-radius:12px;margin:0 16px 24px;overflow:hidden;border:1px solid #222;">
             <div style="background:#8B0000;padding:12px 20px;text-align:center;">
@@ -2433,18 +2471,39 @@ function abrirMobileDetalhes(key, titulo, whatsappUrl) {
             </div>
             ${itensHtml}
         </div>
-        <div class="mp-footer">
-            <a href="${whatsappUrl}" class="mp-footer-whatsapp" target="_blank" rel="noopener">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.558 4.118 1.528 5.845L.057 23.882l6.196-1.424A11.93 11.93 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.8 9.8 0 01-4.997-1.366l-.358-.213-3.681.845.874-3.567-.234-.372A9.79 9.79 0 012.182 12C2.182 6.57 6.57 2.182 12 2.182S21.818 6.57 21.818 12 17.43 21.818 12 21.818z"/></svg>
-                Pedir no WhatsApp
-            </a>
-        </div>
-    `;
+        ${rodapeWhatsapp(whatsappUrl, '')}`;
 
-    document.getElementById('mobile-page-overlay').scrollTop = 0;
+    renderizarMobilePage(titulo, html);
 }
 
+// ── VOLTAR: desce um nível na pilha ───────────────────────────────────────
+function voltarMobilePage() {
+    // Remove o nível atual
+    mobileNavStack.pop();
+
+    if (mobileNavStack.length === 0) {
+        // Pilha vazia → fecha o overlay
+        const overlay = document.getElementById('mobile-page-overlay');
+        if (overlay) overlay.classList.remove('open');
+        document.body.style.overflow = '';
+        return;
+    }
+
+    // Pega o nível anterior e re-renderiza sem empilhar de novo
+    const anterior = mobileNavStack[mobileNavStack.length - 1];
+
+    if (anterior.tipo === 'marca') {
+        _renderizarMarca(anterior.titulo, anterior.linhas, anterior.whatsappUrl);
+    } else if (anterior.tipo === 'modelos') {
+        _renderizarModelos(anterior.linhaKey, anterior.linhaNome, anterior.whatsappUrl);
+    } else if (anterior.tipo === 'detalhes') {
+        _renderizarDetalhes(anterior.key, anterior.titulo, anterior.whatsappUrl);
+    }
+}
+
+// Mantém compatibilidade com o ESC e outros fechamentos que chamam fecharMobilePage
 function fecharMobilePage() {
+    mobileNavStack.length = 0;
     const overlay = document.getElementById('mobile-page-overlay');
     if (!overlay) return;
     overlay.classList.remove('open');
